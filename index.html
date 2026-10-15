@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Herramientas Matemáticas Interactivas</title>
+    <meta name="description"
+        content="Calculadora interactiva para estimación de rutas (algoritmo de Dijkstra) y cálculo de MCM y MCD por algoritmo de Euclides o descomposición de factores." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- BACKGROUND PARTICLES -->
+    <div class="bg-particles" aria-hidden="true">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">MathTools</span>
+                <span class="logo-badge">v2.0</span>
+            </div>
+            <nav class="main-nav" role="navigation" aria-label="Navegación principal">
+                <button class="nav-btn active" id="nav-routes" onclick="showSection('routes')" aria-selected="true">
+                    <span class="nav-icon">🗺️</span> Estimación de Ruta
+                </button>
+                <button class="nav-btn" id="nav-mcm" onclick="showSection('mcm')" aria-selected="false">
+                    <span class="nav-icon">🔢</span> MCM y MCD
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ============================================================ -->
+        <!--  SECCIÓN 1: ESTIMACIÓN DE RUTAS                              -->
+        <!-- ============================================================ -->
+        <section id="section-routes" class="section active" aria-label="Estimación de rutas">
+
+            <div class="section-hero">
+                <div class="section-hero-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">🗺️</span>
+                        Estimación de Ruta
+                    </h1>
+                    <p class="section-subtitle">
+                        Ingresa la matriz de distancias y encuentra la ruta <strong>más corta</strong> o <strong>más
+                            larga</strong> entre nodos usando el algoritmo de Dijkstra.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card-grid">
+
+                <!-- Panel de configuración -->
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h2 class="card-title">⚙️ Configuración</h2>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Número de nodos -->
+                        <div class="form-group">
+                            <label class="form-label" for="node-count">Número de nodos</label>
+                            <div class="input-row">
+                                <input type="number" id="node-count" class="form-input" min="2" max="10" value="4"
+                                    placeholder="2–10" />
+                                <button class="btn btn-secondary" id="btn-gen-matrix" onclick="generateMatrix()">
+                                    Generar Matriz
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de búsqueda -->
+                        <div class="form-group">
+                            <label class="form-label">Tipo de ruta</label>
+                            <div class="toggle-group" role="group" aria-label="Tipo de ruta">
+                                <button class="toggle-btn active" id="route-shortest"
+                                    onclick="setRouteType('shortest')">
+                                    🏎️ Más Corta
+                                </button>
+                                <button class="toggle-btn" id="route-longest" onclick="setRouteType('longest')">
+                                    🐢 Más Larga
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Origen y destino -->
+                        <div class="form-group">
+                            <label class="form-label">Nodo origen</label>
+                            <select id="origin-node" class="form-select"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nodo destino</label>
+                            <select id="dest-node" class="form-select"></select>
+                        </div>
+
+                        <button class="btn btn-primary btn-full" id="btn-calc-route" onclick="calculateRoute()">
+                            <span>Calcular Ruta</span> →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel de la matriz -->
+                <div class="card matrix-card">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 Matriz de Distancias</h2>
+                        <p class="card-hint">Usa 0 o vacío para indicar que no hay conexión directa</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="matrix-container" class="matrix-wrapper">
+                            <p class="placeholder-text">Genera la matriz para comenzar →</p>
+                        </div>
+                        <div class="matrix-actions">
+                            <button class="btn btn-ghost btn-sm" onclick="fillSampleData()">📋 Datos de ejemplo</button>
+                            <button class="btn btn-ghost btn-sm" onclick="clearMatrix()">🗑️ Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Resultado de ruta -->
+            <div id="route-result" class="result-panel hidden" aria-live="polite">
+                <div class="result-header">
+                    <span class="result-icon" id="route-result-icon">✅</span>
+                    <h2 class="result-title" id="route-result-title">Resultado</h2>
+                </div>
+                <div class="result-body">
+                    <div class="result-stat-grid">
+                        <div class="result-stat">
+                            <div class="stat-label">Ruta encontrada</div>
+                            <div class="stat-value" id="route-path-display">—</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="stat-label">Distancia total</div>
+                            <div class="stat-value highlight" id="route-distance-display">—</div>
+                        </div>
+                    </div>
+                    <div class="route-visual" id="route-visual"></div>
+                    <div class="steps-section">
+                        <h3 class="steps-title">📋 Pasos del algoritmo</h3>
+                        <div id="route-steps" class="steps-container"></div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SECCIÓN 2: MCM Y MCD                                        -->
+        <!-- ============================================================ -->
+        <section id="section-mcm" class="section" aria-label="Cálculo de MCM y MCD" hidden>
+
+            <div class="section-hero">
+                <div class="section-hero-content">
+                    <h1 class="section-title">
+                        <span class="title-icon">🔢</span>
+                        Cálculo de MCM y MCD
+                    </h1>
+                    <p class="section-subtitle">
+                        Calcula el <strong>Mínimo Común Múltiplo</strong> y el <strong>Máximo Común Divisor</strong> de
+                        dos números, usando el algoritmo de Euclides o descomposición en factores primos.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card-grid">
+
+                <!-- Panel de entrada -->
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h2 class="card-title">⚙️ Configuración</h2>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            <label class="form-label" for="num-a">Número A</label>
+                            <input type="number" id="num-a" class="form-input" min="1" max="99999"
+                                placeholder="Ej: 36" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="num-b">Número B</label>
+                            <input type="number" id="num-b" class="form-input" min="1" max="99999"
+                                placeholder="Ej: 48" />
+                        </div>
+
+                        <!-- Método -->
+                        <div class="form-group">
+                            <label class="form-label">Método de cálculo</label>
+                            <div class="toggle-group" role="group" aria-label="Método de cálculo">
+                                <button class="toggle-btn active" id="method-euclides" onclick="setMethod('euclides')">
+                                    🔄 Algoritmo de Euclides
+                                </button>
+                                <button class="toggle-btn" id="method-factores" onclick="setMethod('factores')">
+                                    🧩 Factores Primos
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-full" id="btn-calc-mcm" onclick="calculateMCM()">
+                            <span>Calcular MCM y MCD</span> →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel de resultado -->
+                <div class="card" id="mcm-result-card">
+                    <div class="card-header">
+                        <h2 class="card-title">📈 Resultados</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="mcm-placeholder" class="placeholder-text">
+                            Ingresa dos números y presiona calcular
+                        </div>
+                        <div id="mcm-result-content" class="hidden">
+                            <div class="result-badges">
+                                <div class="result-badge mcd-badge">
+                                    <div class="badge-label">MCD</div>
+                                    <div class="badge-value" id="mcd-value">—</div>
+                                    <div class="badge-sub">Máximo Común Divisor</div>
+                                </div>
+                                <div class="result-badge mcm-badge">
+                                    <div class="badge-label">MCM</div>
+                                    <div class="badge-value" id="mcm-value">—</div>
+                                    <div class="badge-sub">Mínimo Común Múltiplo</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Pasos del cálculo MCM/MCD -->
+            <div id="mcm-steps-panel" class="result-panel hidden" aria-live="polite">
+                <div class="result-header">
+                    <span class="result-icon">📋</span>
+                    <h2 class="result-title">Proceso paso a paso</h2>
+                </div>
+                <div class="result-body">
+                    <div id="mcm-steps-content"></div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>MathTools — Herramientas Matemáticas Interactivas &copy; 2026</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
